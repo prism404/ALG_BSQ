@@ -10,9 +10,9 @@ class MaxSquareInfo
 function parseFile($filename)
 {
     $opendFile = fopen($filename, 'r') or die("Cannot open filename\n");
-    // read file
     $nbOfLine = fgets($opendFile);
     $grid = array();
+
     for ($i = 0; $i < $nbOfLine; $i++) {
         $line = fgets($opendFile);
         $board = array();
@@ -25,13 +25,13 @@ function parseFile($filename)
         }
         array_push($grid, $board);
     }
-    // close file
+
     fclose($opendFile);
 
     // Save original array info
     $originalArray = $grid;
 
-    // Find Max Size of square and its coordonate
+    // Find Max Size of square and its coordinate
     $squareInfo = FindMaxSquare($grid);
 
     $originalArray = addSquare($originalArray, $squareInfo->lineIndex, $squareInfo->columnIndex, $squareInfo->squareSize);
@@ -39,14 +39,18 @@ function parseFile($filename)
     printBoardFromIntegerArray($originalArray);
 }
 
+// algorithm starts here
 function FindMaxSquare($array)
 {
     $squareInfo = new MaxSquareInfo();
+
     for ($i = 0; $i < count($array); $i++) {
         for ($j = 0; $j < count($array[$i]); $j++) {
+
             $topLeft = 0;
             $top = 0;
             $left = 0;
+
             if ($j != 0) {
                 $left = $array[$i][$j - 1];
             }
@@ -63,9 +67,11 @@ function FindMaxSquare($array)
     $maxSquareSize = 0;
     $lineIndex = 0;
     $columnIndex = 0;
+
     for ($i = 0; $i < count($array); $i++) {
         for ($j = 0; $j < count($array[$i]); $j++) {
             while (true) {
+
                 $testMaxSquareSize = $maxSquareSize + 1;
 
                 if ($i + $testMaxSquareSize > (count($array)) or $j + $testMaxSquareSize > (count($array[$i]))) {
@@ -133,8 +139,8 @@ function printBoardFromIntegerArray($array)
 
 function addSquare($array, $lineIndex, $columnIndex, $squareSize)
 {
-    // Write a square of 2 in integer array from $lineIndex and $columnIndex of size $squareSize
-    // the 2 will be replace by 'x' when printing the board.
+    // Write a square in integer array from $lineIndex and $columnIndex of size $squareSize
+    // the 2 will be replace by 'x' when printing the board
 
     for ($i = 0; $i < $squareSize; $i++) {
         for ($j = 0; $j < $squareSize; $j++) {
@@ -155,8 +161,6 @@ function print2DimArray($array)
         print("\n");
     }
 }
-
-// use argv etc 
 
 if ($argc < 2) {
     print("Need a file\n");
