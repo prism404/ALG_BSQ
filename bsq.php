@@ -1,9 +1,15 @@
 <?php
 
+class MaxSquareInfo
+{
+    public $lineIndex;
+    public $columnIndex;
+    public $squareSize;
+}
+
 function parseFile($filename)
 {
-    // open filename
-    $opendFile = fopen($filename, 'r');
+    $opendFile = fopen($filename, 'r') or die("Cannot open filename\n");
     // read file
     $nbOfLine = fgets($opendFile);
     $grid = array();
@@ -19,7 +25,6 @@ function parseFile($filename)
         }
         array_push($grid, $board);
     }
-    print("\n");
     // close file
     fclose($opendFile);
 
@@ -27,15 +32,82 @@ function parseFile($filename)
     $originalArray = $grid;
 
     // Find Max Size of square and its coordonate
-    $topLeftMaxLineIndex = 0;
-    $topLeftMaxColIndex = 0;
-    $maxSize = 1; // Minimum is one Cell so start with size == 1
+    $squareInfo = FindMaxSquare($grid);
 
-    // TODO: FindMaxSquare()
-
-    $originalArray = addSquare($originalArray, $topLeftMaxLineIndex, $topLeftMaxColIndex, $maxSize);
+    $originalArray = addSquare($originalArray, $squareInfo->lineIndex, $squareInfo->columnIndex, $squareInfo->squareSize);
 
     printBoardFromIntegerArray($originalArray);
+}
+
+function FindMaxSquare($array)
+{
+    $squareInfo = new MaxSquareInfo();
+    for ($i = 0; $i < count($array); $i++) {
+        for ($j = 0; $j < count($array[$i]); $j++) {
+            $topLeft = 0;
+            $top = 0;
+            $left = 0;
+            if ($j != 0) {
+                $left = $array[$i][$j - 1];
+            }
+            if ($i != 0 && $j != 0) {
+                $topLeft = $array[$i - 1][$j - 1];
+            }
+            if ($i != 0) {
+                $top = $array[$i - 1][$j];
+            }
+            $array[$i][$j] = $left + $top - $topLeft + $array[$i][$j];
+        }
+    }
+
+    $maxSquareSize = 0;
+    $lineIndex = 0;
+    $columnIndex = 0;
+    for ($i = 0; $i < count($array); $i++) {
+        for ($j = 0; $j < count($array[$i]); $j++) {
+            while (true) {
+                $testMaxSquareSize = $maxSquareSize + 1;
+
+                if ($i + $testMaxSquareSize > (count($array)) or $j + $testMaxSquareSize > (count($array[$i]))) {
+                    break;
+                }
+
+                $topLeft = 0;
+                $botLeft = 0;
+                $topRight = 0;
+                $botRight = 0;
+
+                if ($i > 0 && $j > 0) {
+                    $topLeft = $array[$i - 1][$j - 1];
+                }
+
+                if ($i + $testMaxSquareSize != 0 && $j != 0) {
+                    $botLeft = $array[$i - 1 + $testMaxSquareSize][$j - 1];
+                }
+
+                if ($i + $testMaxSquareSize != 0 && $j + $testMaxSquareSize != 0) {
+                    $botRight = $array[$i - 1 + $testMaxSquareSize][$j - 1 + $testMaxSquareSize];
+                }
+
+                if ($j + $testMaxSquareSize != 0 && $i != 0) {
+                    $topRight = $array[$i - 1][$j - 1 + $testMaxSquareSize];
+                }
+
+                $res = $botRight - $botLeft - $topRight + $topLeft;
+                if ($res > 0) {
+                    break;
+                }
+                $maxSquareSize += 1;
+                $lineIndex = $i;
+                $columnIndex = $j;
+            }
+        }
+    }
+
+    $squareInfo->squareSize = $maxSquareSize;
+    $squareInfo->lineIndex = $lineIndex;
+    $squareInfo->columnIndex = $columnIndex;
+    return $squareInfo;
 }
 
 function printBoardFromIntegerArray($array)
@@ -57,7 +129,6 @@ function printBoardFromIntegerArray($array)
         }
         print("\n");
     }
-    
 }
 
 function addSquare($array, $lineIndex, $columnIndex, $squareSize)
@@ -86,4 +157,10 @@ function print2DimArray($array)
 }
 
 // use argv etc 
-parseFile("test");
+
+if ($argc < 2) {
+    print("Need a file\n");
+    exit(-1);
+}
+
+parseFile($argv[1]);
